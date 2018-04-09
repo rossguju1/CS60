@@ -32,7 +32,7 @@ int CreateTCPServerSocket(int ServerPort);
 
 int AcceptTCP(int SeverSocket);
 
-void TCPClientMessage(int ClientSocket);
+//void TCPClientMessage(int ClientSocket);
 
 
 
@@ -45,6 +45,8 @@ int main(const int argc, char *argv[])
 	unsigned int ChildCounter;
 	int ServerSock, ClientSock;
 	unsigned short Port;
+	char buffer[BuffSize];
+	int message;
 
 // arguement checking
 	if (argc != 2) {
@@ -71,32 +73,44 @@ int main(const int argc, char *argv[])
 		ClientSock = AcceptTCP(ServerSock);
 
 //check the return value of fork()
-		if ((ProcessID = fork()) < 0 ) {
-			perror("forking process failed");
-			exit(-1);
-		} else if (ProcessID == 0) {
+		ProcessID = fork();
+		if (ProcessID == 0) {
 			close(ServerSock);
-			// send echo the message back to the client
-			TCPClientMessage(ClientSock);
-			exit(-1);
+
+
+// create buffer
+	bzero(buffer, BuffSize);
+// read the client data eg the message to echo back
+			message = read(ClientSock, buffer, BuffSize);
+// error checking
+			if (message < 0) {
+				perror("ERROR reading from socket");
+			}
+			// echo back the string
+			message = write(ClientSock, buffer, strlen(buffer));
+			if (message < 0) {
+				perror("ERROR writing to socket");
+			}
+
+			close(ClientSock);
+			exit(0);
 		}
 
+		printf("Handling with child process:: %d\n", (int) ProcessID);
 		close(ClientSock);
 		ChildCounter++;
-		while (ChildCounter > 0) {
+		while (ChildCounter) {
 			ProcessID = waitpid((pid_t) - 1, NULL, WNOHANG);
-			printf("Handling with child process: %d\n", ProcessID);
 			if (ProcessID < 0) {
-				perror("Something went wrong");
-			} else if ( ProcessID == 0) {
+				fprintf(stderr, "usage: %s <Port Number>\n", argv[0]);
+			}
+			else if (ProcessID == 0) {
 				break;
 			} else {
 				ChildCounter--;
 			}
 		}
-
 	}
-	//fprintf(stdout, "Client %s is connected", inet_ntoa(ClientAddress.sin_addr));
 	return 0;
 }
 
@@ -164,44 +178,8 @@ int AcceptTCP(int ServerSocket) {
 		return -1;
 	}
 	fprintf(stdout, "Client %s is connected\n", inet_ntoa(ClientAddress.sin_addr));
+
 	return client_fd;
 }
-
-/************** TCPClientMessage **************
-This function just reads the message from the client socket and echos
-the message back to the client
-Input: Integer, socket file descriptor
-Output: None
-***********************************************/
-
-void TCPClientMessage(int client_fd) {
-
-	char buffer[BuffSize];
-	int receiving;
-
-	if ((receiving = recv(client_fd, buffer, BuffSize, 0)) < 0) {
-		perror("Failed to be received");
-	}
-	/* Send received string and receive again until end of transmission */
-	while (receiving > 0) {
-		/* Echo message back to client */
-		if (send(client_fd, buffer, BuffSize, 0) < 0) {
-			perror("client failed to send message");
-
-		}
-
-		/* See if there is more data to receive */
-//if ((receiving = recv(client_fd, buffer, BuffSize, 0)) < 0) {
-		//perror("client failed to write message");
-
-		//}
-	}
-
-	close(client_fd);
-}
-
-
-
-
 
 
