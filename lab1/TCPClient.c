@@ -1,10 +1,18 @@
+/* Ross Guju
+*  CS60 Networks
+*  Lab1 - Socket Programming
+*  TCPClient.c
+*/
+
+
 #include <arpa/inet.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#include <netdb.h>        // socket-related structures
+#include <netdb.h>        
+#define BuffSize 2000
 
 /**************** main() ****************/
 int main(const int argc, char *argv[])
@@ -46,22 +54,17 @@ if (connect(socket_fp, (struct sockaddr*) &ServerAddress, sizeof(ServerAddress))
   } else {
 
   send(socket_fp, message, strlen(message), 0);
-  int n = 0;
-  int len = 0, maxlen = 100;
-  char buffer[maxlen];
-  char* pbuffer = buffer;
 
-  // will remain open until the server terminates the connection
-  while ((n = recv(socket_fp, pbuffer, maxlen, 0)) > 0) {
-    pbuffer += n;
-    maxlen -= n;
-    len += n;
+  char RecieveMessage[BuffSize];
 
-    buffer[len] = '\0';
-    printf("Received: %s", buffer);
-  	}
+  bzero(RecieveMessage, BuffSize);
+
+  read(socket_fp, RecieveMessage, BuffSize);
+  write(socket_fp, RecieveMessage, strlen(RecieveMessage + 1));
+  printf("Received: %s \n", RecieveMessage);
+
+
   }
-
   close(socket_fp);
   return 0;
   }

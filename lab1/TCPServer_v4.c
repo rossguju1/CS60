@@ -5,186 +5,127 @@
 */
 
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/time.h>
-#include <unistd.h>       // read, write, close
-#include <string.h>
-#include <strings.h>        // bcopy, bzero
-#include <netdb.h>        // socket-related structures
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <sys/types.h>
-#include <sys/socket.h>
+#include <stdio.h> 
+#include <string.h> 
+#include <stdlib.h> 
+#include <errno.h> 
+#include <unistd.h>   
+#include <arpa/inet.h>    
+#include <sys/types.h> 
+#include <sys/socket.h> 
+#include <netinet/in.h> 
+#include <netdb.h>
+#include <sys/time.h> 
 
 #define BuffSize 2000
 
-#define ClientLimit 10
 
 
-int CreateTCPServerSocket(int ServerPort);
+int main(int argc, char **argv) {
+  int MasterSocket_fd; 
+  int Socket_fd, max_fd; 
+  unsigned short PortNumber; 
+  unsigned int clientlen; 
+  struct sockaddr_in ServerAddress; 
+  struct sockaddr_in ClientAddress; 
+  char buffer[BuffSize]; 
+  int opt_val; 
+  int message; 
+  int connection; \
+  int ServerRunning;
+  fd_set SelectSock;
+  long TimeOut;
+  struct timeval SelectTimeOut;
+  int i;
 
-int AcceptTCP(int SeverSocket);
+  if (argc != 3) {
+    fprintf(stderr, "usage: %s <TimeOut (Seconds)> <Port>\n", argv[0]);
+    exit(-1);
+  }
+  PortNumber = atoi(argv[2]);
+  TimeOut = atoi(argv[1]);
 
-void TCPClientMessage(int ClientSocket);
-
-
-
-/**************** main() ****************/
-
-
-int main(const int argc, char *argv[])
-{
-
-int *ServerSock_fd;
-fd_set SocketSet_fd;
-int RunServer = 1;
-int NumberPort;
-int Port;
-unsigned short PortNum;
-long TimeOut;
-struct timeval SelectTimeOut;
-int MaximumDescriptor;
-
-if (argc < 3) {
-fprintf(stderr, "\n Usage: ./TCPServer_v4 <TimeOut Seconds>  <Port Number 1>  ... <Port Numbers> ... \n,");
-    exit(1);
-  } else {
-  	TimeOut = atoi(argv[1]);
-  	NumberPort = argc - 2;
-  	ServerSock_fd = (int *)malloc(NumberPort * sizeof(int));
+  MasterSocket_fd = socket(AF_INET, SOCK_STREAM, 0);
+  if (MasterSocket_fd < 0) {
+    perror("opening socket failed");
+    exit(-1);
   }
 
-MaximumDescriptor = -1;
-Port = 0;
-while (Port < NumberPort) {
-	PortNum = atoi(argv[Port + 2]);
-	ServerSock_fd[Port] = CreateTCPServerSocket(PortNum);
 
-	if (ServerSock_fd[Port] > MaximumDescriptor) {
-		MaximumDescriptor = ServerSock_fd[Port];
-	}
-	Port++;
-}
-fprintf(stdout, "Server_v4 Started\n");
+opt_val = 1;
+setsockopt(MasterSocket_fd, SOL_SOCKET, SO_REUSEADDR, &opt_val, sizeof(opt_val));
+  
+  
+  bzero((char *) &ServerAddress, sizeof(ServerAddress));
 
-while(RunServer) {
-	FD_ZERO(&SocketSet_fd);
-	FD_SET(STDIN_FILENO, &SocketSet_fd);
-	for (Port = 0; Port < NumberPort; Port++) {
-		FD_SET(STDIN_FILENO, &SocketSet_fd);
-		}
-	SelectTimeOut.tv_sec = TimeOut;
-	SelectTimeOut.tv_usec = 0;
-	if (select(MaximumDescriptor + 1, &SocketSet_fd, NULL, NULL, &SelectTimeOut) == 0) {
-		fprintf(stdout, "%ld secs passed, no echo request. Blocking at select().\n", TimeOut);
-	} else if (FD_ISSET(0, &SocketSet_fd)) {
-		fprintf(stdout, "Closing Server\n");
-		getchar();
-		RunServer = 0;
-	} 
-		for (Port = 0; Port < NumberPort; Port++) {
-			if (FD_ISSET(ServerSock_fd[Port], &SocketSet_fd)) {
-				fprintf(stdout, "New connection, socket fd is ..., IP is : ... , port : %d\n", PortNum);
-				TCPClientMessage(AcceptTCP(ServerSock_fd[Port]));
-				} 
+  ServerAddress.sin_family = AF_INET;
 
-			}
-	}
+  ServerAddress.sin_addr.s_addr = htonl(INADDR_ANY);
 
-/*for (Port = 0; Port < NumberPort; Port++) {
-	close(ServerSock_fd[Port]);
-	}
-	*/
-free(ServerSock_fd);
-return 0;
+  ServerAddress.sin_port = htons(PortNumber);
 
-}
+ 
+  if (bind(MasterSocket_fd, (struct sockaddr *) &ServerAddress, sizeof(ServerAddress)) < 0) {
+    perror("Error when Binding");
+    exit(-1);
+  }
 
+ 
+ if (listen(MasterSocket_fd, 3) < 0) {
+  perror("Error when listening");
+  exit(-1);
+} 
+printf("Listening on Port %d\n", PortNumber);
+printf("Waiting for connections......\n");
 
+  ServerRunning = 1;
+  
+  while (ServerRunning) {
 
-int CreateTCPServerSocket(int ServerPort) {
+  FD_ZERO(&SelectSock);          
+  FD_SET(MasterSocket_fd, &SelectSock);
+  max_fd = MasterSocket_fd;
+    SelectTimeOut.tv_sec = TimeOut;
+    SelectTimeOut.tv_usec = 0;
+  
+ connection = select(max_fd + 1, &SelectSock, 0, 0, &SelectTimeOut);
+         
+    if ( connection  == 0) {
+      fprintf(stdout, "%ld secs passed, no echo request. Blocking at select().\n", TimeOut);
+    } else if (connection > 0) {
+      if (FD_ISSET(MasterSocket_fd, &SelectSock)) {
+        clientlen = sizeof(ClientAddress);
 
-int server_fd;
-struct sockaddr_in ServerAddress;
+      Socket_fd = accept(MasterSocket_fd, (struct sockaddr *) &ClientAddress, &clientlen);
+      if (Socket_fd < 0) {
+       perror("Error when calling accept()");
+      } else {
+        FD_SET(Socket_fd, &SelectSock);
+        max_fd = (max_fd < Socket_fd)? Socket_fd : max_fd;
+      }
+      printf("New connection, socket fd is %d, IP is : %s, PORT : %d \n" , Socket_fd , inet_ntoa(ClientAddress.sin_addr) , ntohs(ClientAddress.sin_port));  
+      FD_CLR(MasterSocket_fd, &SelectSock);
+    }
+      for (i = 0; i < max_fd + 1; i++) {
+        if(FD_ISSET(i, &SelectSock)) {
+          bzero(buffer, BuffSize);
+          message = read(i, buffer, BuffSize);
+          if (message < 0) {
+              perror("Error when reading from socket");
+            }
+            message = write(Socket_fd, buffer, strlen(buffer));
+              if (message < 0) {
+                    perror("Error when writing to socket");
+               }
+              close(i);
+              FD_CLR(i, &SelectSock);
+        }  
+      }
+    }
+  }
 
-if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
- 	 perror("opening socket failed");
- 	 return -1;
- }
-
-//memset(&ServerAddress, 0, sizeof(ServerAddress));
-
-ServerAddress.sin_family = AF_INET;
-ServerAddress.sin_addr.s_addr = htonl(INADDR_ANY);
-ServerAddress.sin_port = htons(ServerPort); 
-
-int opt_val = 1;
-setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt_val, sizeof(opt_val));
-	
-
-if (bind(server_fd, (struct sockaddr *) &ServerAddress, sizeof(ServerAddress)) < 0){
-	perror("bind didn't work");
-	return -1;
-}
-
- if (listen(server_fd, 3) < 0) {
- 	perror("listening failed");
- 	return -1;
-}	
-return server_fd;
-
-}
-
-int AcceptTCP(int ServerSocket) {
-
-int client_fd;
-
-unsigned int ClientLen;   
-
-struct sockaddr_in ClientAddress;
-
-ClientLen = sizeof(ClientAddress);
-
-	if (( client_fd = accept(ServerSocket, (struct sockaddr *) &ClientAddress, &ClientLen)) < 0 ) {
-		fprintf(stdout, "accept failed");
-		return -1;
-	} else if (getsockname(client_fd, (struct sockaddr *) &ClientAddress, &ClientLen) == -1) {
-		perror("getsockname() failed");
-		return -1;
-	}
-	fprintf(stdout, "Client %s is connected\n", inet_ntoa(ClientAddress.sin_addr));
-	sleep(3);
-return client_fd;
-}
-
-
-
-void TCPClientMessage(int client_fd) {
-
-char buffer[BuffSize];      
-int receiving;
-//sleep(3);
-
-if ((receiving = recv(client_fd, buffer, BuffSize, 0)) < 0) {
-	perror("Failed to be received");
-}
-/* Send received string and receive again until end of transmission */
-while (receiving > 0) {
-/* Echo message back to client */
-if (send(client_fd, buffer, BuffSize, 0) < 0) {
-	perror("client failed to send message");
-
-}
-
-
-if ((receiving = recv(client_fd, buffer, BuffSize, 0)) < 0) {
-	//perror("client failed to write message");
-
-	}
-	
-}
-
-close(client_fd); 
+  printf("Terminating server.\n");
+  close(MasterSocket_fd);
+  exit(-1);
 }
 
