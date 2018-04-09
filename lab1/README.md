@@ -7,9 +7,9 @@ README for lab1. Files include: TCPClient.c, TCPServer_v1.c, TCPServer_v2.c, TCP
 The Makefile compiles all of the c files with the following gcc flags:
 gcc -Wall -pedantic -std=c11 -ggdb, this is the equivalent to `mygcc` which was our alias for compiling all labs and projects. 
 
-However, TCPServer_v3.c need an extra flag `-lpthread` to include the pthread.h library.
+However, TCPServer_v3.c needed an extra flag `-lpthread` to include the pthread.h library.
 
-To build all of the files, run `make all` 
+To build all of the files, run `make` 
 
 To clean up, run `make clean`
 
