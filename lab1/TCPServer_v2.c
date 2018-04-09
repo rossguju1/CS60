@@ -96,7 +96,7 @@ int main(const int argc, char *argv[])
 			exit(0);
 		}
 
-		printf("Handling with child process:: %d\n", (int) ProcessID);
+		printf("Handling with child process: %d\n", (int) ProcessID);
 		close(ClientSock);
 		ChildCounter++;
 		while (ChildCounter) {
