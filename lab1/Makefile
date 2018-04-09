@@ -18,7 +18,7 @@ TCPServer_v3:
 	gcc -lpthread -Wall -pedantic -std=c11 -ggdb -o TCPServer_v3 TCPServer_v3.c
 
 TCPServer_v4:
-	gcc -Wall -pedantic -std=c11 -w -ggdb -o TCPServer_v4 TCPServer_v4.c
+	gcc -Wall -pedantic -std=c11 -ggdb -o TCPServer_v4 TCPServer_v4.c
 
 clean:
 	rm -rd *.dSYM

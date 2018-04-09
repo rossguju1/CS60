@@ -64,13 +64,10 @@ int main(int argc, char **argv)
     perror("opening socket failed");
     exit(-1);
   }
-
-
   opt_val = 1;
   setsockopt(MasterSocket_fd, SOL_SOCKET, SO_REUSEADDR, &opt_val, sizeof(opt_val));
 
-
-  bzero((char *) &ServerAddress, sizeof(ServerAddress));
+  memset(&ServerAddress, 0, sizeof(ServerAddress));
   // get address information for the server
   ServerAddress.sin_family = AF_INET;
 
@@ -128,7 +125,7 @@ int main(int argc, char **argv)
       for (i = 0; i < max_fd + 1; i++) {
         //check if socket descripter is in the set
         if (FD_ISSET(i, &SelectSock)) {
-          bzero(buffer, BuffSize);
+          memset(buffer, 0, BuffSize*sizeof(char));
           // read the client message
           message = read(i, buffer, BuffSize);
           if (message < 0) {

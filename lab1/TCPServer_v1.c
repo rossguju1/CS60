@@ -90,6 +90,7 @@ int main(const int argc, char *argv[])
 		// entire another loop to receive and echo the clients message
 		while (1) {
 			// if nothing was recieved
+			memset(buffer, 0, BuffSize*sizeof(char));
 			if ((receiving = recv(client_fd, buffer, BuffSize, 0)) == 0) {
 				break;
 			} else if (receiving < 0) {
@@ -104,6 +105,5 @@ int main(const int argc, char *argv[])
 	}
 	return 0;
 }
-
 
 

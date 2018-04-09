@@ -93,7 +93,7 @@ void *ThreadMain(void* Socket) {
 	int message;
 
 // create buffer
-	bzero(buffer, BuffSize);
+	memset(buffer, 0, BuffSize*sizeof(char));
 // read the client data eg the message to echo back
 	message = read(client_fd, buffer, BuffSize);
 // error checking

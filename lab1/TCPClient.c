@@ -48,7 +48,7 @@ message = argv[3]; // message to be echoed
 
 struct hostent *hostp = gethostbyname(hostname);
 if (hostp == NULL) {
-    fprintf(stderr, "startup: unknown host '%s'\n", hostname);
+    fprintf(stderr, "startup: unknown host name '%s'\n", hostname);
     exit(-1);
   }
 
@@ -76,7 +76,7 @@ if (connect(socket_fp, (struct sockaddr*) &ServerAddress, sizeof(ServerAddress))
   // make the buffer to insert the echoed response from the Sercer
   char RecieveMessage[BuffSize];
   // make the buffer
-  bzero(RecieveMessage, BuffSize);
+  memset(RecieveMessage, 0, BuffSize*sizeof(char));
 
   // read the server's message 
   read(socket_fp, RecieveMessage, BuffSize);
@@ -90,7 +90,5 @@ if (connect(socket_fp, (struct sockaddr*) &ServerAddress, sizeof(ServerAddress))
   close(socket_fp);
   return 0;
 }
-
-
 
 
