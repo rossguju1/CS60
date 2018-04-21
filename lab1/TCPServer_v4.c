@@ -119,7 +119,7 @@ int main(int argc, char **argv)
           max_fd = (max_fd < Socket_fd) ? Socket_fd : max_fd;
         }
         printf("New connection, socket fd is %d, IP is : %s, PORT : %d \n" , Socket_fd , inet_ntoa(ClientAddress.sin_addr) , ntohs(ClientAddress.sin_port));
-        FD_CLR(MasterSocket_fd, &SelectSock);
+       FD_CLR(MasterSocket_fd, &SelectSock);
       }
       // go through the set of readable socket file descriptors and read data from socket
       for (i = 0; i < max_fd + 1; i++) {
