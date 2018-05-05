@@ -41,7 +41,7 @@
 #define CLOSEWAIT_TIME 1
 
 // sendBuf_timer thread's polling interval in nanoseconds
-#define SENDBUF_POLLING_INTERVAL 100000000
+#define SENDBUF_POLLING_INTERVAL 100000
 
 // MRT client polls the receive buffer with this time interval in 
 // order to check if requested data are available in mrt_srv_recv() 
@@ -50,13 +50,13 @@
 
 // mrt_svr_accept() function uses this interval in nanoseconds to 
 // busy wait on the TCB state
-#define ACCEPT_POLLING_INTERVAL 100000000
+#define ACCEPT_POLLING_INTERVAL 100000
 
 // size of receive buffer
 #define RECEIVE_BUF_SIZE 1000000
 
 // DATA segment timeout value in microseconds
-#define DATA_TIMEOUT 1000
+#define DATA_TIMEOUT 100000
 
 // GBN window size
 #define GBN_WINDOW 10

@@ -31,8 +31,8 @@
 
 /**************** local constants ****************/
 // port numbers of the overlay connection
-#define CLIENTPORT1 87
-#define SVRPORT1 88
+#define CLIENTPORT1 8711
+#define SVRPORT1 8811
 
 // after the received file data is saved, the server waits WAITTIME seconds, and then closes the overlay_connection
 #define WAITTIME 10

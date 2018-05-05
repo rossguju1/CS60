@@ -1,6 +1,6 @@
 /*
  * server/app_simple_server.c -- implementation of the simple server 
- * application. It has following steps:
+i * application. It has following steps:
  * 1. starts the overlay by creating a TCP connection between 
  * 		the server and client; 
  * 2. initializes the MRT server by calling mrt_server_init(), 
@@ -31,10 +31,10 @@
 
 /**************** local constants ****************/
 // port numbers of two overlay connections
-#define CLIENTPORT1 87
-#define SVRPORT1 88
-#define CLIENTPORT2 89
-#define SVRPORT2 90
+#define CLIENTPORT1 8880
+#define SVRPORT1 8881
+#define CLIENTPORT2 8882
+#define SVRPORT2 8883
 
 // after the strings are received, the server waits WAITTIME seconds, and then closes the connections
 #define WAITTIME 10

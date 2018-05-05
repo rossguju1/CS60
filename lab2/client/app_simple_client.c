@@ -33,10 +33,10 @@
 
 /**************** local constants ****************/
 // port numbers of two overlay connections
-#define CLIENTPORT1 87
-#define SVRPORT1 88
-#define CLIENTPORT2 89
-#define SVRPORT2 90
+#define CLIENTPORT1 8880
+#define SVRPORT1 8881
+#define CLIENTPORT2 8882
+#define SVRPORT2 8883
 
 // after the strings are sent, wait WAITTIME seconds, and then close the connections
 #define WAITTIME 5

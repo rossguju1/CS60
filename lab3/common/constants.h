@@ -12,10 +12,10 @@
 /*******************************************************************/
 
 // this is the port number that is used for nodes to interconnect each other to form an overlay, you should change this to a random value to avoid conflicts with other students
-#define CONNECTION_PORT 3000
+#define CONNECTION_PORT 3699
 
 // this is the port number that is opened by overlay process and connected by the network layer process, you should change this to a random value to avoid conflicts with other students
-#define OVERLAY_PORT 3500
+#define OVERLAY_PORT 3969
 
 // max packet data length
 #define MAX_PKT_LEN 1488 
@@ -31,7 +31,7 @@
 #define INFINITE_COST 999
 
 // the network layer process opens this port, and waits for connection from transport layer process, you should change this to a random value to avoid conflicts with other students
-#define NETWORK_PORT 4002
+#define NETWORK_PORT 4696
 
 // this is the broadcasting nodeID. If the overlay layer process receives a packet destined to BROADCAST_NODEID from the network layer process, it should send this packet to all the neighbors
 #define BROADCAST_NODEID 9999

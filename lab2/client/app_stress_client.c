@@ -33,8 +33,8 @@
 
 /**************** local constants ****************/
 // port numbers of the overlay connection
-#define CLIENTPORT1 87
-#define SVRPORT1 88
+#define CLIENTPORT1 8711
+#define SVRPORT1 8811
 
 // after the file is sent, the client waits for WAITTIME seconds, 
 // and then closes the connection
