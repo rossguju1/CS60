@@ -139,6 +139,7 @@ void* waitNbrs(void* arg) {
 // counter used for listen to incoming connections
 
 	int counter;
+
 	counter = 0;
 
 // get socket descriptor which will be the connection number

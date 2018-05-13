@@ -1,54 +1,55 @@
 /*
- * client/mrt_server.h: definitions of server states, related data
- * structures, and server socket interface definitions.
- *
- * CS60, March 2018.
+	CS60SU18
+
+	lab4
+
+	mrt_server.c
+
+	ROSS GUJU
  */
 
-#ifndef MRTSERVER_H
-#define MRTSERVER_H
-
+#include <stdlib.h>
+#include <sys/socket.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <time.h>
 #include <pthread.h>
+#include <assert.h>
+#include <wchar.h>
+#include <string.h>
+#include <memory.h>
+#include "../topology/topology.h"
 #include "../common/seg.h"
+#include "mrt_server.h"
 
-/**************** global types ****************/
-// server states used in FSM
-enum svr_state_t {
-	SVR_CLOSED,
-	SVR_LISTENING,
-	SVR_CONNECTED,
-	SVR_CLOSEWAIT
-};
 
-// server transport control block (TCB), containing overlay
-// connection information at the server side.
-typedef struct svr_tcb {
-	unsigned int svr_nodeID;        // node ID of server, obtained by  topology_getNodeIDfromname()
-	unsigned int svr_portNum;       // port number of server
-	unsigned int client_nodeID;     // node ID of client, obtained by  topology_getNodeIDfromname()
-	unsigned int client_portNum;    // port number of client
-	unsigned int state;            // state of server
+// enum svr_state_t {
+// 	SVR_CLOSED,
+// 	SVR_LISTENING,
+// 	SVR_CONNECTED,
+// 	SVR_CLOSEWAIT
+// };
 
-	// the following fields are for data transmission
-	unsigned int expect_seqNum;
-	char *recvBuf;
-	unsigned int usedBufLen;
-	pthread_mutex_t *bufMutex;
-} server_tcb_t;
+// // server transport control block (TCB), containing overlay
+// // connection information at the server side.
+// typedef struct svr_tcb {
+// 	unsigned int svr_nodeID;        // node ID of server, obtained by  topology_getNodeIDfromname()
+// 	unsigned int svr_portNum;       // port number of server
+// 	unsigned int client_nodeID;     // node ID of client, obtained by  topology_getNodeIDfromname()
+// 	unsigned int client_portNum;    // port number of client
+// 	unsigned int state;            // state of server
 
-/**************** functions ****************/
-/*
- * In what follows, we provide the prototype definition for each
- * call and limited pseudo code representation of the function.
- *
- * This is not meant to be comprehensive - more a guideline. You are
- * free to design the code as you wish.
- *
- * NOTE: When designing all functions you should consider all
- * possible states of the FSM using a switch statement. Typically,
- * the FSM has to be in a certain state determined by the FSM design
- * to carry out a certain action.
- */
+// 	// the following fields are for data transmission
+// 	unsigned int expect_seqNum;
+// 	char *recvBuf;
+// 	unsigned int usedBufLen;
+// 	pthread_mutex_t *bufMutex;
+// } server_tcb_t;
+
+
+/************* functions ******************/
+
+
 
 /**
  * This function initializes the TCB table marking all entries NULL.
@@ -62,7 +63,15 @@ typedef struct svr_tcb {
  *
  * @param conn - socket descriptor
  */
-void mrt_server_init(int conn);
+void mrt_server_init(int conn)
+{
+
+
+
+
+
+
+}
 
 
 /**
@@ -78,7 +87,17 @@ void mrt_server_init(int conn);
  * @param port - port number
  * @return 1 for success; -1 for failure
  */
-int mrt_server_sock(unsigned int port);
+int mrt_server_sock(unsigned int port)
+{
+
+
+
+
+
+
+}
+
+
 
 
 /**
@@ -94,7 +113,17 @@ int mrt_server_sock(unsigned int port);
  * @param sockfd - socket file descriptor
  * @return 1 for successful change; -1 for failure
  */
-int mrt_server_accept(int sockfd);
+int mrt_server_accept(int sockfd)
+{
+
+
+
+
+
+
+}
+
+
 
 
 /**
@@ -108,8 +137,18 @@ int mrt_server_accept(int sockfd);
  * @param length - buffer length
  * @return 1 for success; -1 for failure
  */
-int mrt_server_recv(int sockfd, void *buf, unsigned int length);
+int mrt_server_recv(int sockfd, void *buf, unsigned int length)
+{
 
+
+
+
+
+
+
+
+
+}
 
 /**
  * This function calls free() to free the TCB entry. It marks that
@@ -120,7 +159,19 @@ int mrt_server_recv(int sockfd, void *buf, unsigned int length);
  * @param sockfd - socket file descriptor
  * @return 1 for success; -1 for failure
  */
-int mrt_server_close(int sockfd);
+int mrt_server_close(int sockfd)
+{
+
+
+
+
+
+
+
+
+
+}
+
 
 
 /**
@@ -135,6 +186,33 @@ int mrt_server_close(int sockfd);
  * @param arg - arguments for the thread
  * @return 1 for success; -1 for failure
  */
-void *seghandler(void *arg);
+void *seghandler(void *arg)
+{
 
-#endif //MRTSERVER_H
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
