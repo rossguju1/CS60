@@ -1,5 +1,6 @@
 # Makefile for CS60 Lab1
 #
+# CS60
 # Ross Guju
 
 

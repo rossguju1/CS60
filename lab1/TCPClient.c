@@ -2,7 +2,7 @@
 *  CS60 Networks
 *  Lab1 - Socket Programming
 *  TCPClient.c
-*
+* CS60 lab1
 * This program is the client program that sends a message to one of my server programs and the server echo's back
 * the message to the client. 
 * ./TCPClient is used for all of the TCPServer programs

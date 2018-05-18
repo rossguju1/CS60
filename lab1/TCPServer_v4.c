@@ -1,7 +1,11 @@
 /* Ross Guju
+ *
 *  CS60 Networks
+*
 *  Lab1 - Socket Programming
+*
 *  TCPServer_v4.c
+*
 *  Non-blocking I/O model for a server/client echoing program. This program uses select() function to concurrently connect to
 *  client sockets
 */

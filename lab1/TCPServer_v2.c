@@ -1,7 +1,10 @@
 /* Ross Guju
 *  CS60 Networks
+*
 *  Lab1 - Socket Programming
+*
 *  TCPServer_v2.c
+*
 *  This Server program initiates a server that creates child processes by the fork() function when the TCPClient
 *  program communicates with it.
 */

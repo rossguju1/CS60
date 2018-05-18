@@ -1,7 +1,10 @@
 /* Ross Guju
+ *
 *  CS60 Networks
+*
 *  Lab1 - Socket Programming
 *  TCPServer_v3.c
+*
 *  This Server program is non-blocking in the sense that it implements threads that echoes messages back to the client
 *  concurrently
 */

@@ -1,6 +1,6 @@
 /* Ross Guju
 *  CS60 Networks
-*  Lab1 - Socket Programming
+*  Lab1
 *  TCPServer_v1.c
 *  This program creates a server on flume.cs.dartmouth.edu and listens for my TCPClient program to send a
 *  string where the sever will echo it back to the client.
