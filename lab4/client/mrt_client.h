@@ -109,7 +109,7 @@ int mrt_client_sock(unsigned int client_port);
  * @param server_port - server port for connection
  * @return 1 for successful change; -1 for failure
  */
-int mrt_client_connect(int socked, int nodeID, unsigned int server_port);
+int mrt_client_connect(int sockfd, int nodeID, unsigned int server_port);
 
 
 /**

@@ -1,6 +1,8 @@
 /*
  * network/network.c: implementation of the MNP process.
  *
+ * 	Ross Guju
+ *
  * CS60, March 2018.
  */
 
@@ -23,9 +25,10 @@
 #include "../common/seg.h"
 #include "../topology/topology.h"
 #include "network.h"
+#include "routing_table.h"
 #include "nbrcosttable.h"
 #include "dvtable.h"
-#include "routing_table.h"
+//#include "routing_table.h"
 
 /**************** constants ****************/
 #define NETWORK_WAITTIME 60
@@ -65,18 +68,34 @@ int main(int argc, char *argv[]) {
 	      routing table, connections to overlay and transport
 	      */
 
-	nbr_cost_entry_t *nbr_cost_table = nbrcosttable_create();
 
+	nbr_cost_table = nbrcosttable_create();
 
-	dv_t* dvtable = dvtable_create();
+	nbrcosttable_print(nbr_cost_table);
+	printf("%s\n", "made nbr table");
 
+	dv_table = dvtable_create();
+	printf("%s\n", "made dvtable table");
 
 	dv_mutex = (pthread_mutex_t *) malloc(sizeof(pthread_mutex_t));
+	printf("%s\n", "dv mutex malloc'd");
+
+	pthread_mutex_init(dv_mutex, NULL);
+
+	printf("%s\n", "dv_mutex init");
+
+
+	routing_table = routingtable_create();
+	printf("%s\n", "routing_table mutex made");
+
+	routingtable_mutex = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
+
+	printf("%s\n", "routingtable_mutex malloc'd");
 
 	pthread_mutex_init(routingtable_mutex, NULL);
 
+	printf("%s\n", "routingtable_mutex init");
 
-	routingtable_t* routing_table = routingtable_create();
 
 	transport_connection = -1;
 
@@ -84,15 +103,29 @@ int main(int argc, char *argv[]) {
 
 	/* 2) print out the three tables*/
 
+	printf("%s\n", "main 1");
+
 	nbrcosttable_print(nbr_cost_table);
 
-	dvtable_print(dvtable);
+	printf("%s\n", "main 2");
+
+	dvtable_print(dv_table);
+
+	printf("%s\n", "main 3");
 
 	routingtable_print(routing_table);
 
+	printf("%s\n", "main 4");
+
+
+
 	/* 3) set up signal handler for SIGINT */
 
+	printf("%s\n", "main 5");
+
 	signal(SIGINT, network_stop);
+
+	printf("%s\n", "main 6");
 
 	/* 4) set up overlay connection */
 
@@ -120,6 +153,7 @@ int main(int argc, char *argv[]) {
 	sleep(NETWORK_WAITTIME);
 
 	/* 7) wait NETWORK_WAITTIME for routes to be established and then print routing table*/
+	printf("%s\n", "about to print out routing_table");
 
 	routingtable_print(routing_table);
 
@@ -144,6 +178,8 @@ int main(int argc, char *argv[]) {
 // 3) return the socket descriptor
 int connectToOverlay() {
 
+	// fill in sockaddr_in for socket
+
 	struct sockaddr_in servaddr;
 
 	servaddr.sin_family = AF_INET;
@@ -154,17 +190,23 @@ int connectToOverlay() {
 
 	int overlay_conn = socket(AF_INET, SOCK_STREAM, 0);
 
+	// error checking
+
 	if (overlay_conn < 0) {
 
+		printf("%s\n", "couldnt connect to overlay");
 		return -1;
 	}
 
-	if (connect(overlay_conn, (struct sockaddr *) &servaddr, sizeof(servaddr)) != 0) {
+	// try to connect to overlay
 
+	if (connect(overlay_conn, (struct sockaddr *) &servaddr, sizeof(servaddr)) != 0) {
+		printf("%s\n", "connection to overlay failed");
 		return -1;
 	}
 
 	// successfully connected
+
 	return overlay_conn;
 }
 
@@ -183,7 +225,10 @@ int connectToOverlay() {
 // 11)    send it to the next hop w/ overlay_sendpkt()
 // 2) close overlay conn
 // 3) exit thread
+
 void *pkthandler(void *arg) {
+
+	// defines variables
 
 	mnp_pkt_t packet;
 
@@ -199,65 +244,119 @@ void *pkthandler(void *arg) {
 
 	int nextRoutingNode;
 
+
+
 	int MyNodeID = topology_getMyNodeID();
+
+	printf("%s\n", "about to start pkthandler");
+
+	// while recv packet from overlay connection
 
 	while (overlay_recvpkt(&packet, overlay_connection) > 0) {
 
 		if (packet.header.type == ROUTE_UPDATE) {
 
+			// mutex_lock threads
+
 			pthread_mutex_lock(dv_mutex);
 
 			pthread_mutex_lock(routingtable_mutex);
+
+			// clear pktUpdate and save data from packet.data
 
 			memset(&pktUpdate, 0, packet.header.length);
 
 			memcpy(&pktUpdate, packet.data, packet.header.length);
 
+			printf("%s\n", packet.data);
+
+			printf("%s\n", "packet.header.type == ROUTE_UPDATE");
+
+			// go through entries in pktUpdate and update
+
 			for (i = 0; i < pktUpdate.entryNum; i++) {
+
 
 				routeupdate_entry_t* routing_update;
 
 				routing_update = &pktUpdate.entry[i];
 
+				//printf("packet.header.src_nodeID => %d routing_update->nodeID => %d \n", packet.header.src_nodeID, routing_update->nodeID);
+
+				// set dvtable cost from src_nodeID to routing_update_>nodeID
+
 				dvtable_setcost(dv_table, packet.header.src_nodeID, routing_update->nodeID, routing_update->cost);
+
+				// routeupdate algorithm where we compare dvCost and nbrCost
 
 				dvCost = dvtable_getcost(dv_table, MyNodeID, routing_update->nodeID);
 
+
 				nbrCost = (nbrcosttable_getcost(nbr_cost_table, packet.header.src_nodeID) + routing_update->cost);
+
+				//printf("nbrCost => %d and dvCost => %d\n", nbrCost, dvCost);
+
+				// if dvCost is bigger than nbrCost then update the next hop
 
 				if (dvCost > nbrCost) {
 
+
 					dvtable_setcost(dv_table, MyNodeID, routing_update->nodeID, nbrCost);
+
 
 					routingtable_setnextnode(routing_table, routing_update->nodeID, packet.header.src_nodeID);
 				}
 			}
+
+			// unlock mutex
+
 			pthread_mutex_unlock(dv_mutex);
 
 			pthread_mutex_unlock(routingtable_mutex);
 
 		} else if (packet.header.dest_nodeID == MyNodeID && packet.header.type == MNP) {
 
+			// clear segment and save packet.data
+
 			memset(&segment, 0, packet.header.length);
 
 			memcpy(&segment, packet.data, packet.header.length);
 
+			// forward segment to MRT
+
 			forwardsegToMRT(transport_connection, packet.header.src_nodeID, &segment);
+
+			printf("%s\n", "packet.header.dest_nodeID == MyNodeID && packet.header.type == MNP");
+
+			// if the pckate header is not my nodeID and header.type is MNP send to next hop
 
 		} else if (packet.header.dest_nodeID != MyNodeID && packet.header.type == MNP) {
 
+			// mutex lock
+
 			pthread_mutex_lock(routingtable_mutex);
+
+			//  send to next hop
 
 			nextRoutingNode = routingtable_getnextnode(routing_table, packet.header.dest_nodeID);
 
+			// unlock mutex
+
 			pthread_mutex_unlock(routingtable_mutex);
 
+			// send move packet to next hop overlay
+
 			overlay_sendpkt(nextRoutingNode, &packet, overlay_connection);
+
+			printf("%s\n", "packet.header.dest_nodeID != MyNodeID && packet.header.type == MNP");
 		}
 	}
+
+	// close overlay_connection and exit pthread
+
 	close(overlay_connection);
 
-	overlay_connection = -1;
+	printf("%s\n", "pkthandler close");
 
 	pthread_exit(NULL);
 }
@@ -284,6 +383,10 @@ void *pkthandler(void *arg) {
 //    Sleep ROUTEUPDATE_INTERVAL
 void *routeupdate_daemon(void *arg) {
 
+	// printf("%s\n", "@ routeupdate_Daemon1");
+
+	// initialize variables
+
 	mnp_pkt_t packet;
 
 	pkt_routeupdate_t routingUpdate;
@@ -304,11 +407,19 @@ void *routeupdate_daemon(void *arg) {
 
 	int i;
 
+	// printf("%s\n", " @ routeupdate_Daemon2");
+
 	while (1) {
+
+		// pthread lock
 
 		pthread_mutex_lock(dv_mutex);
 
+		// go through routingUpdate entries get distance variable cost
+
 		for (i = 0; i < routingUpdate.entryNum; i++) {
+
+			// printf("%s\n", " @ routeupdate_Daemon4");
 
 			routeupdate_entry_t *entry;
 
@@ -316,30 +427,74 @@ void *routeupdate_daemon(void *arg) {
 
 			entry->nodeID = nodeARRAY[i];
 
+			printf("entry->nodeID => %d\n", entry->nodeID);
+
+			// printf("%s\n", " @ routeupdate_Daemon5");
+
+			// if (packet.header.src_nodeID == NULL) {
+			// 	printf("%s\n", "packet.header.src_nodeID is null");
+
+			// } else if (entry->nodeID == NULL) {
+
+			// 	printf("%s\n", "entry->nodeID");
+			// }
+
+			printf("packet.header.src_nodeID => %d\n", packet.header.src_nodeID);
+
+			if (dv_table == NULL) {
+
+				printf("dv_table is null\n");
+			}
+
 			entry->cost = dvtable_getcost(dv_table, packet.header.src_nodeID, entry->nodeID);
 
+			// printf("%s\n", " @ routeupdate_Daemon6");
+
 		}
+
+		// printf("%s\n", " @ routeupdate_Daemon7");
+
+		// clear packet and copy data
+
 		memset(packet.data, 0, sizeof(pkt_routeupdate_t));
 
 		memcpy(packet.data, &routingUpdate, sizeof(pkt_routeupdate_t));
 
 		pthread_mutex_unlock(dv_mutex);
 
+		// printf("%s\n", " @ routeupdate_Daemon8");
+
+		// sned snedpkt to overlay
+
 		int status = overlay_sendpkt(BROADCAST_NODEID, &packet, overlay_connection);
+
+		// printf("%s\n", " @ routeupdate_Daemon9");
+		//
+		// check status for error checking
 
 		if (status < 0) {
 
 			break;
 		}
 
+		// printf("%s\n", " @ routeupdate_Daemon10");
+		//
+		// sleep fpr ROUTEUPDATE_INTERVAL
+
 		sleep(ROUTEUPDATE_INTERVAL);
+
+		printf("%s\n", " @ routeupdate_Daemon11");
 	}
 
-	free(nodeARRAY);
+	// printf("%s\n", " @ routeupdate_Daemon12");
+
+	// close overlat and free nodeARRAY
 
 	close(overlay_connection);
 
-	overlay_connection = -1;
+	free(nodeARRAY);
+
+	// overlay_connection = -1;
 
 	pthread_exit(NULL);
 }
@@ -358,11 +513,17 @@ void *routeupdate_daemon(void *arg) {
 // 8)   close the connection to local MRT
 void waitTransport() {
 
+	// printf("%s\n", "@ waitTransport 1");
+
+	// initialize sockaddr_in
+
 	struct sockaddr_in socket_address;
 
 	int sock_fd;
 
 	int nextHop;
+
+	// error checking for socket
 
 	if ((sock_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 
@@ -371,7 +532,13 @@ void waitTransport() {
 		exit(-1);
 	}
 
+	// printf("%s\n", "@ waitTransport 2");
+
+	// clear socket_address by setting memmory to 0
+
 	memset(&socket_address, 0, sizeof(struct sockaddr_in));
+
+	// fill in socket_address information
 
 	socket_address.sin_port = htons(NETWORK_PORT);
 
@@ -379,18 +546,32 @@ void waitTransport() {
 
 	socket_address.sin_addr.s_addr = htonl(INADDR_ANY);
 
+	//error checking
+
 	int bind_status;
 
+	// printf("%s\n", "@ waitTransport 3");
+
 	bind_status = bind(sock_fd, (struct sockaddr*) &socket_address, sizeof(struct sockaddr_in));
+
+	// check blind status for error checking
 
 	if (bind_status == -1) {
 
 		printf("%s\n", "bind failed in waitTransport");
 	}
 
+	// printf("%s\n", "@ waitTransport 4");
+
 	int listen_status;
 
+	// listen to accepting sockets
+
 	listen_status = listen(sock_fd, MAX_NODE_NUM);
+
+	// printf("%s\n", "@ waitTransport 5");
+
+	// error checking for listen_Status
 
 	if (listen_status < 0) {
 
@@ -399,11 +580,19 @@ void waitTransport() {
 		close(sock_fd);
 	}
 
+	// printf("%s\n", "@ waitTransport 6");
+
+	// accept transport_ connection
+
 	while (1) {
 
 		mnp_pkt_t packet;
 
 		transport_connection = accept(sock_fd, NULL, NULL);
+
+		// printf("%s\n", "@ waitTransport 7");
+
+		// error checking
 
 		if (transport_connection < 0) {
 
@@ -411,6 +600,10 @@ void waitTransport() {
 
 			break;
 		}
+
+		// get segment to send to overlay process
+
+		// fill in packet header information
 
 		packet.header.type = MNP;
 
@@ -420,26 +613,38 @@ void waitTransport() {
 
 		int segment_status;
 
+		// printf("%s\n", "@ waitTransport 8");
+
 		segment_status = getsegToSend(transport_connection, &packet.header.dest_nodeID, (seg_t*) &packet.data);
+
+		// printf("%s\n", "@ waitTransport 9");
+
+		// while there is a segment to send, lock mutex, get next hop node and then send to overlay
 
 		while (segment_status > 0) {
 
 			pthread_mutex_lock(routingtable_mutex);
 
+			// printf("%s\n", "@ waitTransport 10");
+
 			nextHop = routingtable_getnextnode(routing_table, packet.header.dest_nodeID);
 
+			// printf("%s\n", "@ waitTransport 11");
 			pthread_mutex_unlock(routingtable_mutex);
 
+			// printf("%s\n", "@ waitTransport 12");
 			overlay_sendpkt(nextHop, &packet, overlay_connection);
-
+			// printf("%s\n", "@ waitTransport 13");
 		}
+
+		// close
 
 		close(transport_connection);
 
 		transport_connection = -1;
-
+		// printf("%s\n", "@ waitTransport 14");
 	}
-
+	printf("%s\n", "@ waitTransport 15");
 	close(sock_fd);
 }
 
@@ -453,17 +658,26 @@ void waitTransport() {
 // 2) exit
 void network_stop() {
 
-	close(overlay_connection);
+	// clean up
 
-	close(transport_connection);
+	// printf("%s\n", "network_stop 2");
 
 	routingtable_destroy(routing_table);
 
 	pthread_mutex_destroy(routingtable_mutex);
 
+	close(overlay_connection);
+
+	close(transport_connection);
+
+	// printf("%s\n", "network_stop 3");
+
 	free(routingtable_mutex);
 
 	dvtable_destroy(dv_table);
+
+	// printf("%s\n", "network_stop 4");
+
 
 	pthread_mutex_destroy(dv_mutex);
 
@@ -471,8 +685,10 @@ void network_stop() {
 
 	nbrcosttable_destroy(nbr_cost_table);
 
-	exit(-1);
+	// printf("%s\n", "network_stop 5");
 
+
+	exit(-1);
 
 }
 

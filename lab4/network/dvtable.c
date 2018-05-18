@@ -4,6 +4,8 @@
  * Each node has an ON process maintaining a distance vector table
  * for the node that it is running on.
  *
+ * Ross Guju
+ *
  * CS60, March 2018.
  */
 
@@ -51,21 +53,31 @@ dv_entry_t *dv_entry_new(int sourceNode);
 dv_t *dvtable_create()
 {
 
+	// get needed array of nodes and IDS
+
 	int nbrNum = topology_getNbrNum();
 
 	int myNodeID = topology_getMyNodeID();
 	int* nbrARRAY = topology_getNbrArray();
 
 
+
 	dv_t* dv_table = (dv_t*)malloc((nbrNum + 1) * sizeof(dv_t)); //pointers to the headnodes
+
+	// error checking
+
 	if (!dv_table) {
 		return NULL;
 	}
+
+	// go through and initialze array and make dv_entries
 
 	for (int i = 0; i < (nbrNum); i++) {
 		dv_table[i].nodeID = nbrARRAY[i];
 		dv_table[i].dvEntry = dv_entry_new((int)nbrARRAY[i]);
 	}
+
+	//the last index is saved for the hostname ID
 	dv_table[(nbrNum)].nodeID = myNodeID;
 	dv_table[(nbrNum)].dvEntry = dv_entry_new(myNodeID);
 	free(nbrARRAY);
@@ -98,6 +110,8 @@ int dvtable_setcost(dv_t *dvtable, int fromNodeID, int toNodeID, unsigned int co
 	int nbrNum = topology_getNbrNum();
 	int netnodeNum = topology_getNodeNum();
 
+	// go through table and set the cost from the node inputs
+
 	for (int i = 0; i < (nbrNum + 1); i++) {
 		dv_t current_dv = dvtable[i];
 		if (fromNodeID == current_dv.nodeID) {
@@ -123,12 +137,20 @@ unsigned int dvtable_getcost(dv_t *dvtable, int fromNodeID, int toNodeID)
 	int nbrNum = topology_getNbrNum();
 	int netnodeNum = topology_getNodeNum();
 
-	for (int i = 0; i < (nbrNum + 1); i++) {
-		dv_t current_dv = dvtable[i];
-		if (fromNodeID == current_dv.nodeID) {
+
+	// printf("%s\n", "dvtable_getcost 1");
+
+	// printf("fromNodeID~>%d  toNodeID~>%d \n", fromNodeID, toNodeID );
+	for (int i = 0; i < (nbrNum); i++) {
+		// printf("%s\n", "dvtable_getcost 2");
+
+		if (fromNodeID == dvtable[i].nodeID) {
+			// printf("%s\n", "dvtable_getcost 3");
 			for (int index = 0; index < netnodeNum; index++) {
-				if (current_dv.dvEntry[index].nodeID == toNodeID) {
-					return current_dv.dvEntry[index].cost;
+				// printf("%s\n", "dvtable_getcost 4");
+				if (dvtable[i].dvEntry[index].nodeID == toNodeID) {
+					// printf("%s\n", "dvtable_getcost 5");
+					return dvtable[i].dvEntry[index].cost;
 				}
 			}
 		}
@@ -136,6 +158,7 @@ unsigned int dvtable_getcost(dv_t *dvtable, int fromNodeID, int toNodeID)
 
 	return INFINITE_COST;
 }
+
 
 /** TODO:
  * This function prints out the contents of a dvtable.
@@ -154,6 +177,11 @@ void dvtable_print(dv_t *dvtable)
 	printf("----------------------------------\n");
 }
 
+/************* dv_entry_new() ************/
+
+// helper function
+//
+// this function initializes dv_entries for every dvtable entry
 
 dv_entry_t *dv_entry_new(int sourceNode)
 {

@@ -4,6 +4,8 @@
  * by the routing protocol of MNP. A routing table is a hash table
  * containing MAX_RT_ENTRY slot entries.
  *
+ *  Ross Guju
+ *
  * CS60, March 2018.
  */
 
@@ -27,7 +29,7 @@
 
 
 
-
+/********** local functions ***********/
 
 set_t *set_new(void);
 
@@ -86,8 +88,11 @@ routingtable_t *routingtable_create()
 
   rt->table = calloc(MAX_ROUTINGTABLE_SLOTS, sizeof(set_t)); //pointers to the headnodes
 
+
+  printf("%s\n", "routingtable_Create 1");
   for (i = 0; i < MAX_ROUTINGTABLE_SLOTS; i++) {
     //create an empty set for all indexes in table
+    printf("%s\n", "making a new set");
     rt->table[i] = set_new();
   }
 
@@ -96,8 +101,11 @@ routingtable_t *routingtable_create()
   int nbrNum = topology_getNbrNum();
   int* nbrARRAY = topology_getNbrArray();
 
+
   for (int i = 0; i < nbrNum; i++) {
+    printf("%s\n", "inserting");
     if (hashtable_insert(rt, nbrARRAY[i], nbrARRAY[i])) {
+      printf("%s\n", "inserted");
       continue;
     }
   }
@@ -180,7 +188,9 @@ void routingtable_print(routingtable_t *rt) {
 }
 
 
+/*********************** set_new() ***********************/
 
+// helper function
 
 set_t *set_new(void)
 {
@@ -194,6 +204,10 @@ set_t *set_new(void)
   }
 }
 
+
+/********************** set_insert() ***************************/
+
+// helper function
 
 
 bool set_insert(set_t *set, int destinationID, int nextID) {
@@ -224,6 +238,9 @@ bool set_insert(set_t *set, int destinationID, int nextID) {
 }
 
 
+/******************** routing_entry_node_new() *********************/
+
+// helper function
 
 routingtable_entry_t *routing_entry_node_new(int destinationID, int nextID)
 {
@@ -252,7 +269,9 @@ routingtable_entry_t *routing_entry_node_new(int destinationID, int nextID)
 
 
 
+/***********  set_delete() ******/
 
+// helper function
 
 void set_delete(set_t *set)
 {
@@ -266,6 +285,10 @@ void set_delete(set_t *set)
   }
 }
 
+
+/************** set_find() ***************/
+
+// helper function
 
 int set_find(set_t *set, int destID)
 {
@@ -288,7 +311,8 @@ int set_find(set_t *set, int destID)
 
 }
 
-
+/******* hashtable_insert() ************/
+// helper function
 
 bool hashtable_insert(routingtable_t *rt, int destID, int nextID)
 {
@@ -301,6 +325,9 @@ bool hashtable_insert(routingtable_t *rt, int destID, int nextID)
 
 }
 
+/********** hashtable_find() ****************/
+
+// helper function
 
 int hashtable_find(routingtable_t *rt, int destID)
 {
@@ -313,6 +340,10 @@ int hashtable_find(routingtable_t *rt, int destID)
   }
 
 }
+
+/************** hashtable_delete() ****************/
+
+// helper function
 
 void hashtable_delete(routingtable_t *rt)
 {

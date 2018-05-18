@@ -1,7 +1,7 @@
 /*
  * common/constants.h: constants used by mini overlay network
  *
- * CS60, March 2018 
+ * CS60, March 2018
  */
 
 #ifndef CONSTANTS_H
@@ -11,7 +11,7 @@
 // transport layer parameters
 /*******************************************************************/
 
-// The MAX connections can be supported by MRT. Your TCB table 
+// The MAX connections can be supported by MRT. Your TCB table
 // should contain MAX_TRANSPORT_CONNECTIONS entries
 #define MAX_TRANSPORT_CONNECTIONS 10
 
@@ -40,12 +40,12 @@
 // sendBuf_timer thread's polling interval in nanoseconds
 #define SENDBUF_POLLING_INTERVAL 100000000
 
-// MRT client polls the receive buffer with this time interval in 
-// order to check if requested data are available in mrt_srv_recv() 
+// MRT client polls the receive buffer with this time interval in
+// order to check if requested data are available in mrt_srv_recv()
 // function in seconds
 #define RECVBUF_POLLING_INTERVAL 1
 
-// mrt_svr_accept() function uses this interval in nanoseconds to 
+// mrt_svr_accept() function uses this interval in nanoseconds to
 // busy wait on the TCB state
 #define ACCEPT_POLLING_INTERVAL 100000000
 
@@ -65,30 +65,30 @@
 /*******************************************************************/
 
 // this is the port number that is used for nodes to interconnect each other to form an overlay, you should change this to a random value to avoid conflicts with other students
-#define CONNECTION_PORT 3000
+#define CONNECTION_PORT 3421
 
 // this is the port number that is opened by overlay process and connected by the network layer process, you should change this to a random value to avoid conflicts with other students
-#define OVERLAY_PORT 3528
+#define OVERLAY_PORT 3891
 
 // max packet data length
-#define MAX_PKT_LEN 1488 
+#define MAX_PKT_LEN 1488
 
 
 
 /*******************************************************************/
 // network layer parameters
 /*******************************************************************/
-// max node number supported by the overlay network 
+// max node number supported by the overlay network
 #define MAX_NODE_NUM 10
 
-// max number of slots in the routing table  
+// max number of slots in the routing table
 #define MAX_ROUTINGTABLE_SLOTS 10
 
 // infinite link cost value, if two nodes are disconnected, they will have link cost INFINITE_COST
 #define INFINITE_COST 999
 
 // the network layer process opens this port, and waits for connection from transport layer process, you should change this to a random value to avoid conflicts with other students
-#define NETWORK_PORT 4002
+#define NETWORK_PORT 4023
 
 // this is the broadcasting nodeID. If the overlay layer process receives a packet destined to BROADCAST_NODEID from the network layer process, it should send this packet to all the neighbors
 #define BROADCAST_NODEID 9999
