@@ -1,6 +1,7 @@
 /*
  * network/network.h: definitions of functions for the MNP process.
- *
+ *	
+ *	Ross Guju
  * CS60, March 2018. 
  */
 

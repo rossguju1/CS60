@@ -1,6 +1,8 @@
 /*
  * common/constants.h: constants used by mini overlay network
  *
+ *	Ross Guju
+ *
  * CS60, March 2018 
  */
 

@@ -1,4 +1,4 @@
-/*
+/*	Ross Guju
  * overlay/overlay.c: implementation of an ON process. It has
  * following steps:
  * 1. connect to all neighbors

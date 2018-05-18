@@ -1,5 +1,5 @@
 # Mini Overlay Network
-
+## Ross Guju
 Use the provided Makefile to build the code. 
 
 We use the following four hosts to build the overlay network: 
