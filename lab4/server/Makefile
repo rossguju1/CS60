@@ -8,7 +8,7 @@ PROGS = simple_server stress_server
 LIBS = -pthread
 
 FLAGS = #-DTEST
-CFLAGS = -Wall -pedantic -std=c11 -ggdb $(FLAGS) -I$C
+CFLAGS = -Wall -pedantic -w -std=c11 -ggdb $(FLAGS) -I$C
 CC = gcc
 MAKE = make
 

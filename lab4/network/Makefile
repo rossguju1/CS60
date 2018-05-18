@@ -7,7 +7,7 @@ C = ../common
 PROGS = network
 LIBS = -pthread
 
-CFLAGS = -Wall -pedantic -std=c11 -ggdb -I$C
+CFLAGS = -Wall -w -pedantic -std=c11 -ggdb -I$C
 CC = gcc
 MAKE = make
 
